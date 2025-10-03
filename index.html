@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NeuroShield - Smart Hypertension Management</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -19,7 +20,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 1100px;
       margin: 0 auto;
       animation: fadeIn 0.5s ease-in;
     }
@@ -36,14 +37,14 @@
     }
 
     .header h1 {
-      font-size: 3em;
+      font-size: 2.5em;
       font-weight: 700;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
       margin-bottom: 10px;
     }
 
     .header p {
-      font-size: 1.2em;
+      font-size: 1.1em;
       opacity: 0.95;
     }
 
@@ -104,6 +105,11 @@
       border-color: #667eea;
     }
 
+    .input-group small {
+      color: #666;
+      font-size: 0.85em;
+    }
+
     .input-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -159,6 +165,11 @@
     .btn-secondary {
       background: linear-gradient(135deg, #868f96 0%, #596164 100%);
       color: white;
+    }
+
+    .btn-small {
+      padding: 8px 15px;
+      font-size: 0.9em;
     }
 
     .risk-badge {
@@ -217,6 +228,11 @@
       border-left: 4px solid #667eea;
     }
 
+    .medication-item.primary {
+      border-left: 4px solid #f45c43;
+      background: #fff8f8;
+    }
+
     .medication-item h4 {
       color: #667eea;
       margin-bottom: 8px;
@@ -262,6 +278,13 @@
       padding: 20px;
       border-radius: 15px;
       text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
     }
 
     .stat-card h3 {
@@ -275,10 +298,6 @@
 
     .hidden {
       display: none;
-    }
-
-    .icon {
-      font-size: 1.5em;
     }
 
     .progress-bar {
@@ -330,9 +349,15 @@
       color: #0c5460;
     }
 
+    .alert-success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      color: #155724;
+    }
+
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.8; }
+      50% { opacity: 0.9; }
     }
 
     .user-select {
@@ -350,6 +375,7 @@
       text-align: center;
       cursor: pointer;
       transition: all 0.3s;
+      position: relative;
     }
 
     .user-card:hover {
@@ -362,6 +388,116 @@
       margin-bottom: 5px;
     }
 
+    .delete-user {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(235, 51, 73, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 1.2em;
+      line-height: 1;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: 20px 0;
+    }
+
+    .chart-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .quick-action {
+      background: white;
+      border: 2px solid #667eea;
+      color: #667eea;
+      padding: 15px;
+      border-radius: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .quick-action:hover {
+      background: #667eea;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .quick-action h4 {
+      font-size: 2em;
+      margin-bottom: 5px;
+    }
+
+    .dashboard-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 15px;
+      border-left: 4px solid #667eea;
+    }
+
+    .summary-card h4 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      cursor: pointer;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
     @media (max-width: 768px) {
       .header h1 {
         font-size: 2em;
@@ -369,19 +505,22 @@
       .input-row {
         grid-template-columns: 1fr;
       }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🧠 NeuroShield</h1>
+      <h1>NeuroShield</h1>
       <p>Smart Hypertension Management & Cardiovascular Risk Prevention</p>
     </div>
 
     <!-- User Login/Selection -->
     <div class="card" id="userLogin">
-      <h2><span class="icon">👥</span> Welcome to NeuroShield</h2>
+      <h2>Welcome to NeuroShield</h2>
       
       <div id="existingUsers" class="hidden">
         <h3>Select Your Profile</h3>
@@ -400,14 +539,35 @@
 
     <!-- Dashboard -->
     <div class="card hidden" id="dashboard">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
         <div>
           <div class="user-badge" id="currentUserBadge"></div>
-          <div id="profileUpdateAlert"></div>
         </div>
         <button class="btn btn-secondary" onclick="logout()">Logout</button>
       </div>
 
+      <div id="dashboardAlerts"></div>
+
+      <h3 style="margin: 20px 0 10px 0; color: #667eea;">Quick Actions</h3>
+      <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <div class="quick-action" onclick="showQuickBPLog()">
+          <h4>🩺</h4>
+          <p>Log BP</p>
+        </div>
+        <div class="quick-action" onclick="showTodaysMeds()">
+          <h4>💊</h4>
+          <p>Today's Meds</p>
+        </div>
+        <div class="quick-action" onclick="exportData()">
+          <h4>📥</h4>
+          <p>Export Data</p>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 10px 0; color: #667eea;">Dashboard</h3>
+      <div class="dashboard-summary" id="dashboardSummary"></div>
+
+      <h3 style="margin: 20px 0 10px 0; color: #667eea;">Manage</h3>
       <div class="stats-grid">
         <div class="stat-card" onclick="showProfileEdit()">
           <h3>📝</h3>
@@ -430,12 +590,12 @@
 
     <!-- Profile Edit Section -->
     <div class="card hidden" id="profileSection">
-      <h2><span class="icon">👤</span> Patient Profile</h2>
+      <h2>Patient Profile</h2>
       
       <div class="input-group">
         <label>Date of Birth</label>
         <input type="date" id="dob">
-        <small style="color: #666;">Age will be calculated automatically</small>
+        <small>Age will be calculated automatically</small>
       </div>
 
       <div class="input-row">
@@ -543,7 +703,7 @@
 
     <!-- BP Monitoring Section -->
     <div class="card hidden" id="bpSection">
-      <h2><span class="icon">🩺</span> Blood Pressure Monitoring</h2>
+      <h2>Blood Pressure Monitoring</h2>
       
       <div id="bpReminderAlert"></div>
 
@@ -557,8 +717,26 @@
           <input type="number" id="diastolic" placeholder="e.g., 80">
         </div>
       </div>
+
+      <div class="input-group">
+        <label>Notes (optional)</label>
+        <input type="text" id="bpNotes" placeholder="e.g., After exercise, stressed, etc.">
+      </div>
       
       <button class="btn btn-primary" onclick="logBP()">Log BP Reading</button>
+
+      <div style="margin-top: 30px;">
+        <h3>BP Trends</h3>
+        <div class="chart-controls">
+          <button class="btn btn-small btn-primary" onclick="updateBPChart(7)">7 Days</button>
+          <button class="btn btn-small btn-primary" onclick="updateBPChart(30)">30 Days</button>
+          <button class="btn btn-small btn-primary" onclick="updateBPChart(90)">90 Days</button>
+          <button class="btn btn-small btn-primary" onclick="updateBPChart(0)">All Time</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="bpChart"></canvas>
+        </div>
+      </div>
       
       <div id="bpLog" style="margin-top: 20px;"></div>
 
@@ -567,7 +745,7 @@
 
     <!-- Medication Management Section -->
     <div class="card hidden" id="medicationSection">
-      <h2><span class="icon">💊</span> Medication Management</h2>
+      <h2>Medication Management</h2>
       
       <h3>Add New Medication</h3>
       <div class="input-group">
@@ -595,6 +773,11 @@
         <label>Doctor's Instructions</label>
         <textarea id="medInstructions" placeholder="Any special instructions from your doctor"></textarea>
       </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="isPrimary">
+        <label for="isPrimary">Mark as primary medication (most important)</label>
+      </div>
       
       <button class="btn btn-primary" onclick="addMedication()">Add Medication</button>
 
@@ -609,7 +792,7 @@
       </div>
 
       <div style="margin-top: 20px;">
-        <h3>📊 Monthly Adherence</h3>
+        <h3>Monthly Adherence</h3>
         <div class="progress-bar">
           <div class="progress-fill" id="adherenceBar" style="width: 0%;">0%</div>
         </div>
@@ -633,12 +816,12 @@
 
     <!-- Health History Section -->
     <div class="card hidden" id="historySection">
-      <h2><span class="icon">📊</span> Health History & Risk Assessment</h2>
+      <h2>Health History & Risk Assessment</h2>
       
       <div id="riskDisplay"></div>
       
       <div class="recommendations">
-        <h3>🎯 Personalized Recommendations</h3>
+        <h3>Personalized Recommendations</h3>
         <ul id="recommendationsList"></ul>
       </div>
 
@@ -665,14 +848,48 @@
     </div>
   </div>
 
+  <!-- Quick BP Log Modal -->
+  <div class="modal" id="quickBPModal">
+    <div class="modal-content">
+      <h2>Quick BP Log</h2>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Systolic (mmHg)</label>
+          <input type="number" id="quickSystolic" placeholder="120">
+        </div>
+        <div class="input-group">
+          <label>Diastolic (mmHg)</label>
+          <input type="number" id="quickDiastolic" placeholder="80">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Notes (optional)</label>
+        <input type="text" id="quickBPNotes" placeholder="Any notes...">
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-primary" onclick="quickLogBP()">Log BP</button>
+        <button class="btn btn-secondary" onclick="closeModal('quickBPModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's Meds Modal -->
+  <div class="modal" id="todaysMedsModal">
+    <div class="modal-content">
+      <h2>Today's Medications</h2>
+      <div id="modalMedsList"></div>
+      <button class="btn btn-secondary" onclick="closeModal('todaysMedsModal')" style="margin-top: 20px;">Close</button>
+    </div>
+  </div>
+
   <script>
-    // In-memory data storage
     const appData = {
       users: {},
       currentUser: null
     };
 
-    // Calculate age from DOB
+    let bpChart = null;
+
     function calculateAge(dob) {
       const today = new Date();
       const birthDate = new Date(dob);
@@ -684,7 +901,6 @@
       return age;
     }
 
-    // Auto-calculate age and BMI
     document.addEventListener('DOMContentLoaded', function() {
       const dobInput = document.getElementById('dob');
       const weightInput = document.getElementById('weight');
@@ -722,9 +938,10 @@
           }
         });
       }
+
+      updateUserList();
     });
 
-    // Create new user
     function createUser() {
       const username = document.getElementById('newUsername').value.trim();
       if (!username) {
@@ -752,18 +969,15 @@
       loginUser(username);
     }
 
-    // Login user
     function loginUser(username) {
       appData.currentUser = username;
       document.getElementById('userLogin').classList.add('hidden');
       document.getElementById('dashboard').classList.remove('hidden');
-      document.getElementById('currentUserBadge').textContent = '👤 ' + username;
+      document.getElementById('currentUserBadge').textContent = username;
       
-      checkProfileUpdateReminder();
       loadDashboard();
     }
 
-    // Logout
     function logout() {
       appData.currentUser = null;
       hideAllSections();
@@ -771,7 +985,6 @@
       updateUserList();
     }
 
-    // Update user list
     function updateUserList() {
       const userList = document.getElementById('userList');
       const existingUsers = document.getElementById('existingUsers');
@@ -783,8 +996,16 @@
         for (let username in appData.users) {
           const userCard = document.createElement('div');
           userCard.className = 'user-card';
-          userCard.innerHTML = `<h3>👤</h3><p>${username}</p>`;
-          userCard.onclick = () => loginUser(username);
+          userCard.innerHTML = `
+            <button class="delete-user" onclick="deleteUser('${username}', event)">×</button>
+            <h3>👤</h3>
+            <p>${username}</p>
+          `;
+          userCard.onclick = (e) => {
+            if (!e.target.classList.contains('delete-user')) {
+              loginUser(username);
+            }
+          };
           userList.appendChild(userCard);
         }
       } else {
@@ -792,40 +1013,174 @@
       }
     }
 
-    // Check if profile needs updating
-    function checkProfileUpdateReminder() {
-      const user = appData.users[appData.currentUser];
-      if (!user.lastUpdated) return;
-
-      const lastUpdate = new Date(user.lastUpdated);
-      const now = new Date();
-      const daysSinceUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
-      
-      const alertDiv = document.getElementById('profileUpdateAlert');
-      
-      if (daysSinceUpdate >= 60) {
-        alertDiv.innerHTML = `
-          <div class="alert alert-warning">
-            ⚠️ It's been ${daysSinceUpdate} days since your last profile update. 
-            Please update your weight and health information.
-            <button class="btn btn-warning" onclick="showProfileEdit()" style="margin-left: 10px;">Update Now</button>
-          </div>
-        `;
-      } else if (daysSinceUpdate >= 30) {
-        alertDiv.innerHTML = `
-          <div class="alert alert-info">
-            ℹ️ Consider updating your profile. Last updated ${daysSinceUpdate} days ago.
-          </div>
-        `;
+    function deleteUser(username, event) {
+      event.stopPropagation();
+      if (confirm(`Are you sure you want to delete the profile for ${username}? This cannot be undone.`)) {
+        delete appData.users[username];
+        updateUserList();
       }
     }
 
-    // Load dashboard
     function loadDashboard() {
+      updateDashboardAlerts();
+      updateDashboardSummary();
       updateUserList();
     }
 
-    // Hide all sections
+    function updateDashboardAlerts() {
+      const user = appData.users[appData.currentUser];
+      const alertsDiv = document.getElementById('dashboardAlerts');
+      let alerts = [];
+
+      // Check profile update
+      if (!user.lastUpdated || !user.profile.dob) {
+        alerts.push({
+          type: 'warning',
+          message: '⚠️ Please complete your profile to get started.',
+          action: 'showProfileEdit()',
+          actionText: 'Update Profile'
+        });
+      } else {
+        const lastUpdate = new Date(user.lastUpdated);
+        const now = new Date();
+        const daysSinceUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+        
+        if (daysSinceUpdate >= 60) {
+          alerts.push({
+            type: 'warning',
+            message: `⚠️ It's been ${daysSinceUpdate} days since your last profile update. Please update your weight and health information.`,
+            action: 'showProfileEdit()',
+            actionText: 'Update Now'
+          });
+        } else if (daysSinceUpdate >= 30) {
+          alerts.push({
+            type: 'info',
+            message: `ℹ️ Consider updating your profile. Last updated ${daysSinceUpdate} days ago.`
+          });
+        }
+      }
+
+      // Check BP reminder
+      if (user.profile.hypertension === 'yes') {
+        if (!user.bpReadings || user.bpReadings.length === 0) {
+          alerts.push({
+            type: 'info',
+            message: 'ℹ️ Start tracking your blood pressure regularly.',
+            action: 'showBPSection()',
+            actionText: 'Log BP'
+          });
+        } else {
+          const lastReading = user.bpReadings[user.bpReadings.length - 1];
+          const lastDate = new Date(lastReading.timestamp);
+          const now = new Date();
+          const daysSinceReading = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+          const frequency = parseInt(user.profile.bpFrequency || 7);
+
+          if (daysSinceReading >= frequency) {
+            alerts.push({
+              type: 'warning',
+              message: `⚠️ Time to check your BP! Last reading was ${daysSinceReading} days ago.`,
+              action: 'showQuickBPLog()',
+              actionText: 'Log BP Now'
+            });
+          }
+        }
+      }
+
+      // Check medication adherence
+      if (user.medications && user.medications.length > 0) {
+        const total = user.takenCount + user.skippedCount;
+        if (total > 10) {
+          const adherence = Math.round((user.takenCount / total) * 100);
+          if (adherence < 80) {
+            alerts.push({
+              type: 'warning',
+              message: `⚠️ Your medication adherence is ${adherence}%. Try to improve consistency.`,
+              action: 'showMedicationSection()',
+              actionText: 'View Medications'
+            });
+          } else if (adherence >= 90) {
+            alerts.push({
+              type: 'success',
+              message: `✅ Great job! Your medication adherence is ${adherence}%.`
+            });
+          }
+        }
+      }
+
+      alertsDiv.innerHTML = alerts.map(alert => `
+        <div class="alert alert-${alert.type}">
+          ${alert.message}
+          ${alert.action ? `<button class="btn btn-${alert.type === 'warning' ? 'warning' : 'primary'} btn-small" onclick="${alert.action}" style="margin-left: 10px;">${alert.actionText}</button>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function updateDashboardSummary() {
+      const user = appData.users[appData.currentUser];
+      const summaryDiv = document.getElementById('dashboardSummary');
+      
+      let summary = [];
+
+      // Latest BP
+      if (user.bpReadings && user.bpReadings.length > 0) {
+        const latest = user.bpReadings[user.bpReadings.length - 1];
+        const date = new Date(latest.timestamp);
+        const daysAgo = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
+        summary.push({
+          title: 'Latest BP Reading',
+          content: `<strong>${latest.systolic}/${latest.diastolic} mmHg</strong><br>
+                    <small>${daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : daysAgo + ' days ago'}</small><br>
+                    <small>${getBPEmoji(latest.systolic, latest.diastolic)}</small>`
+        });
+      }
+
+      // Current BMI
+      if (user.profile.bmi) {
+        summary.push({
+          title: 'Current BMI',
+          content: `<strong>${user.profile.bmi}</strong><br>
+                    <small>${getBMICategory(user.profile.bmi)}</small>`
+        });
+      }
+
+      // Today's Medications
+      if (user.medications && user.medications.length > 0) {
+        const totalDoses = user.medications.reduce((sum, med) => sum + med.frequency, 0);
+        summary.push({
+          title: 'Today\'s Medications',
+          content: `<strong>${user.medications.length} medications</strong><br>
+                    <small>${totalDoses} doses to take</small>`
+        });
+      }
+
+      // Adherence
+      const total = user.takenCount + user.skippedCount;
+      if (total > 0) {
+        const adherence = Math.round((user.takenCount / total) * 100);
+        summary.push({
+          title: 'Medication Adherence',
+          content: `<strong>${adherence}%</strong><br>
+                    <small>${user.takenCount} taken, ${user.skippedCount} skipped</small>`
+        });
+      }
+
+      summaryDiv.innerHTML = summary.map(item => `
+        <div class="summary-card">
+          <h4>${item.title}</h4>
+          <div>${item.content}</div>
+        </div>
+      `).join('');
+    }
+
+    function getBMICategory(bmi) {
+      bmi = parseFloat(bmi);
+      if (bmi < 18.5) return 'Underweight';
+      if (bmi < 25) return 'Normal weight';
+      if (bmi < 30) return 'Overweight';
+      return 'Obese';
+    }
+
     function hideAllSections() {
       const sections = ['userLogin', 'dashboard', 'profileSection', 'bpSection', 'medicationSection', 'historySection'];
       sections.forEach(id => {
@@ -833,7 +1188,6 @@
       });
     }
 
-    // Show profile edit
     function showProfileEdit() {
       hideAllSections();
       document.getElementById('profileSection').classList.remove('hidden');
@@ -869,7 +1223,6 @@
       }
     }
 
-    // Save profile
     function saveProfile() {
       const dob = document.getElementById('dob').value;
       const sex = document.getElementById('sex').value;
@@ -916,14 +1269,12 @@
       backToDashboard();
     }
 
-    // Back to dashboard
     function backToDashboard() {
       hideAllSections();
       document.getElementById('dashboard').classList.remove('hidden');
-      checkProfileUpdateReminder();
+      loadDashboard();
     }
 
-    // Show BP section
     function showBPSection() {
       const user = appData.users[appData.currentUser];
       
@@ -937,9 +1288,10 @@
       
       checkBPReminder();
       displayBPLog();
+      initBPChart();
+      updateBPChart(30);
     }
 
-    // Check BP reminder
     function checkBPReminder() {
       const user = appData.users[appData.currentUser];
       if (!user.bpReadings || user.bpReadings.length === 0) {
@@ -968,17 +1320,17 @@
         `;
       } else {
         alertDiv.innerHTML = `
-          <div class="alert alert-info">
+          <div class="alert alert-success">
             ✓ Last BP reading: ${daysSinceReading} day(s) ago. Next check due in ${frequency - daysSinceReading} day(s).
           </div>
         `;
       }
     }
 
-    // Log BP
     function logBP() {
       const systolic = document.getElementById('systolic').value;
       const diastolic = document.getElementById('diastolic').value;
+      const notes = document.getElementById('bpNotes').value;
 
       if (!systolic || !diastolic) {
         alert('Please enter both systolic and diastolic values!');
@@ -987,18 +1339,25 @@
 
       const user = appData.users[appData.currentUser];
       const timestamp = new Date().toISOString();
-      const reading = { systolic: parseInt(systolic), diastolic: parseInt(diastolic), timestamp, date: new Date().toLocaleString() };
+      const reading = { 
+        systolic: parseInt(systolic), 
+        diastolic: parseInt(diastolic), 
+        notes: notes,
+        timestamp, 
+        date: new Date().toLocaleString() 
+      };
       user.bpReadings.push(reading);
 
       document.getElementById('systolic').value = '';
       document.getElementById('diastolic').value = '';
+      document.getElementById('bpNotes').value = '';
 
       displayBPLog();
       checkBPReminder();
+      updateBPChart(30);
       alert('BP reading logged successfully!');
     }
 
-    // Display BP log
     function displayBPLog() {
       const user = appData.users[appData.currentUser];
       const bpLog = document.getElementById('bpLog');
@@ -1017,23 +1376,102 @@
         entry.innerHTML = `
           <div>
             <strong>${reading.systolic}/${reading.diastolic} mmHg</strong>
-            <div style="font-size: 0.9em; color: #666;">${reading.date}</div>
+            ${reading.notes ? `<div style="font-size: 0.85em; color: #888; margin-top: 4px;">${reading.notes}</div>` : ''}
+            <div style="font-size: 0.9em; color: #666; margin-top: 4px;">${reading.date}</div>
           </div>
-          <div style="font-size: 1.5em;">${getBPEmoji(reading.systolic, reading.diastolic)}</div>
+          <div style="font-size: 1.2em;">${getBPEmoji(reading.systolic, reading.diastolic)}</div>
         `;
         bpLog.appendChild(entry);
       });
     }
 
-    // Get BP emoji
     function getBPEmoji(sys, dias) {
       if (sys < 120 && dias < 80) return '💚 Normal';
       if (sys < 130 && dias < 80) return '💛 Elevated';
       if (sys < 140 || dias < 90) return '🧡 Stage 1';
-      return '❤️ Stage 2';
+      if (sys < 180 && dias < 120) return '❤️ Stage 2';
+      return '🚨 Crisis';
     }
 
-    // Show medication section
+    function initBPChart() {
+      const ctx = document.getElementById('bpChart');
+      if (!ctx) return;
+
+      if (bpChart) {
+        bpChart.destroy();
+      }
+
+      bpChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Systolic',
+            data: [],
+            borderColor: '#eb3349',
+            backgroundColor: 'rgba(235, 51, 73, 0.1)',
+            tension: 0.4
+          }, {
+            label: 'Diastolic',
+            data: [],
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: 'Blood Pressure Trends'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              min: 60,
+              max: 180,
+              title: {
+                display: true,
+                text: 'mmHg'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateBPChart(days) {
+      const user = appData.users[appData.currentUser];
+      if (!user.bpReadings || user.bpReadings.length === 0 || !bpChart) return;
+
+      let readings = user.bpReadings;
+      
+      if (days > 0) {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
+        readings = readings.filter(r => new Date(r.timestamp) >= cutoffDate);
+      }
+
+      const labels = readings.map(r => {
+        const date = new Date(r.timestamp);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      });
+      
+      const systolicData = readings.map(r => r.systolic);
+      const diastolicData = readings.map(r => r.diastolic);
+
+      bpChart.data.labels = labels;
+      bpChart.data.datasets[0].data = systolicData;
+      bpChart.data.datasets[1].data = diastolicData;
+      bpChart.update();
+    }
+
     function showMedicationSection() {
       hideAllSections();
       document.getElementById('medicationSection').classList.remove('hidden');
@@ -1043,13 +1481,13 @@
       updateAdherence();
     }
 
-    // Add medication
     function addMedication() {
       const medName = document.getElementById('medName').value.trim();
       const medDosage = document.getElementById('medDosage').value.trim();
       const medFrequency = document.getElementById('medFrequency').value;
       const medTiming = document.getElementById('medTiming').value.trim();
       const medInstructions = document.getElementById('medInstructions').value.trim();
+      const isPrimary = document.getElementById('isPrimary').checked;
 
       if (!medName || !medDosage || !medFrequency) {
         alert('Please fill in medication name, dosage, and frequency!');
@@ -1064,6 +1502,7 @@
         frequency: parseInt(medFrequency),
         timing: medTiming,
         instructions: medInstructions,
+        isPrimary: isPrimary,
         addedDate: new Date().toISOString()
       };
 
@@ -1074,13 +1513,13 @@
       document.getElementById('medFrequency').value = '';
       document.getElementById('medTiming').value = '';
       document.getElementById('medInstructions').value = '';
+      document.getElementById('isPrimary').checked = false;
 
       displayMedications();
       displayTodayMedications();
       alert('Medication added successfully!');
     }
 
-    // Display medications
     function displayMedications() {
       const user = appData.users[appData.currentUser];
       const medList = document.getElementById('medicationList');
@@ -1093,20 +1532,19 @@
       medList.innerHTML = '';
       user.medications.forEach(med => {
         const medItem = document.createElement('div');
-        medItem.className = 'medication-item';
+        medItem.className = `medication-item ${med.isPrimary ? 'primary' : ''}`;
         medItem.innerHTML = `
-          <h4>${med.name}</h4>
+          <h4>${med.name} ${med.isPrimary ? '⭐ PRIMARY' : ''}</h4>
           <p><strong>Dosage:</strong> ${med.dosage}</p>
           <p><strong>Frequency:</strong> ${med.frequency} time(s) per day</p>
           <p><strong>Timing:</strong> ${med.timing || 'Not specified'}</p>
           <p><strong>Instructions:</strong> ${med.instructions || 'None'}</p>
-          <button class="btn btn-danger" onclick="removeMedication(${med.id})">Remove</button>
+          <button class="btn btn-danger btn-small" onclick="removeMedication(${med.id})">Remove</button>
         `;
         medList.appendChild(medItem);
       });
     }
 
-    // Remove medication
     function removeMedication(medId) {
       if (!confirm('Are you sure you want to remove this medication?')) return;
 
@@ -1116,7 +1554,6 @@
       displayTodayMedications();
     }
 
-    // Display today's medications
     function displayTodayMedications() {
       const user = appData.users[appData.currentUser];
       const todayMeds = document.getElementById('todayMedications');
@@ -1129,31 +1566,28 @@
       todayMeds.innerHTML = '';
       user.medications.forEach(med => {
         const medItem = document.createElement('div');
-        medItem.className = 'medication-item';
+        medItem.className = `medication-item ${med.isPrimary ? 'primary' : ''}`;
         medItem.innerHTML = `
-          <h4>${med.name} - ${med.dosage}</h4>
+          <h4>${med.name} - ${med.dosage} ${med.isPrimary ? '⭐' : ''}</h4>
           <p><strong>Take ${med.frequency} time(s) today</strong></p>
           <p>${med.timing || ''}</p>
           <div>
-            <button class="btn btn-success" onclick="medTaken(${med.id}, '${med.name}')">✓ Taken</button>
-            <button class="btn btn-danger" onclick="medSkipped(${med.id}, '${med.name}')">✗ Skipped</button>
+            <button class="btn btn-success btn-small" onclick="medTaken(${med.id}, '${med.name}')">✓ Taken</button>
+            <button class="btn btn-danger btn-small" onclick="medSkipped(${med.id}, '${med.name}')">✗ Skipped</button>
           </div>
         `;
         todayMeds.appendChild(medItem);
       });
     }
 
-    // Med taken
     function medTaken(medId, medName) {
       logMedication(medId, medName, true);
     }
 
-    // Med skipped
     function medSkipped(medId, medName) {
       logMedication(medId, medName, false);
     }
 
-    // Log medication
     function logMedication(medId, medName, taken) {
       const user = appData.users[appData.currentUser];
       const timestamp = new Date().toISOString();
@@ -1179,7 +1613,6 @@
       alert(`${medName} marked as ${taken ? 'taken' : 'skipped'}!`);
     }
 
-    // Display med log
     function displayMedLog() {
       const user = appData.users[appData.currentUser];
       const medLog = document.getElementById('medLog');
@@ -1206,7 +1639,6 @@
       });
     }
 
-    // Update adherence
     function updateAdherence() {
       const user = appData.users[appData.currentUser];
       const total = user.takenCount + user.skippedCount;
@@ -1218,7 +1650,6 @@
       document.getElementById('skippedCount').textContent = user.skippedCount;
     }
 
-    // Show health history
     function showHealthHistory() {
       const user = appData.users[appData.currentUser];
       
@@ -1235,7 +1666,6 @@
       displayHealthStats();
     }
 
-    // Calculate risk
     function calculateRisk() {
       const user = appData.users[appData.currentUser];
       const profile = user.profile;
@@ -1266,13 +1696,12 @@
       document.getElementById('riskDisplay').innerHTML = `
         <p><strong>Your Cardiovascular Risk Level:</strong></p>
         <div class="risk-badge ${riskClass}">${riskLevel} Risk</div>
-        <p style="margin-top: 10px; color: #666;">Based on your profile, we recommend ${profile.hypertension === 'yes' ? 'regular BP monitoring and medication adherence' : 'healthy lifestyle habits and periodic check-ups'}.</p>
+        <p style="margin-top: 10px; color: #666;">Based on your profile. Thisis not a medical diagnosis. Please consult your healthcare provider.</p>
       `;
 
       generateRecommendations(profile, riskLevel);
     }
 
-    // Generate recommendations
     function generateRecommendations(profile, riskLevel) {
       const recommendations = [];
 
@@ -1314,7 +1743,6 @@
       recList.innerHTML = recommendations.map(rec => `<li>${rec}</li>`).join('');
     }
 
-    // Display health stats
     function displayHealthStats() {
       const user = appData.users[appData.currentUser];
       
@@ -1324,7 +1752,130 @@
       document.getElementById('medicationsCount').textContent = user.medications.length;
     }
 
-    // Initialize app
+    // Quick BP Log Modal
+    function showQuickBPLog() {
+      document.getElementById('quickBPModal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function quickLogBP() {
+      const systolic = document.getElementById('quickSystolic').value;
+      const diastolic = document.getElementById('quickDiastolic').value;
+      const notes = document.getElementById('quickBPNotes').value;
+
+      if (!systolic || !diastolic) {
+        alert('Please enter both systolic and diastolic values!');
+        return;
+      }
+
+      const user = appData.users[appData.currentUser];
+      const timestamp = new Date().toISOString();
+      const reading = { 
+        systolic: parseInt(systolic), 
+        diastolic: parseInt(diastolic), 
+        notes: notes,
+        timestamp, 
+        date: new Date().toLocaleString() 
+      };
+      user.bpReadings.push(reading);
+
+      document.getElementById('quickSystolic').value = '';
+      document.getElementById('quickDiastolic').value = '';
+      document.getElementById('quickBPNotes').value = '';
+
+      closeModal('quickBPModal');
+      alert('BP reading logged successfully!');
+      loadDashboard();
+    }
+
+    // Today's Meds Modal
+    function showTodaysMeds() {
+      const user = appData.users[appData.currentUser];
+      const modalList = document.getElementById('modalMedsList');
+
+      if (!user.medications || user.medications.length === 0) {
+        modalList.innerHTML = '<p style="color: #666;">No medications added yet. Add medications to track adherence.</p>';
+      } else {
+        modalList.innerHTML = '';
+        user.medications.forEach(med => {
+          const medItem = document.createElement('div');
+          medItem.className = `medication-item ${med.isPrimary ? 'primary' : ''}`;
+          medItem.innerHTML = `
+            <h4>${med.name} - ${med.dosage} ${med.isPrimary ? '⭐' : ''}</h4>
+            <p><strong>Take ${med.frequency} time(s) today</strong></p>
+            <p style="font-size: 0.9em; color: #666;">${med.timing || ''}</p>
+            <div style="margin-top: 10px;">
+              <button class="btn btn-success btn-small" onclick="medTaken(${med.id}, '${med.name}'); updateModalMeds();">✓ Taken</button>
+              <button class="btn btn-danger btn-small" onclick="medSkipped(${med.id}, '${med.name}'); updateModalMeds();">✗ Skipped</button>
+            </div>
+          `;
+          modalList.appendChild(medItem);
+        });
+      }
+
+      document.getElementById('todaysMedsModal').classList.add('active');
+    }
+
+    function updateModalMeds() {
+      showTodaysMeds();
+    }
+
+    // Export Data
+    function exportData() {
+      const user = appData.users[appData.currentUser];
+      
+      let csvContent = "data:text/csv;charset=utf-8,";
+      
+      // BP Data
+      csvContent += "BLOOD PRESSURE READINGS\n";
+      csvContent += "Date,Systolic,Diastolic,Notes\n";
+      user.bpReadings.forEach(reading => {
+        csvContent += `${reading.date},${reading.systolic},${reading.diastolic},"${reading.notes || ''}"\n`;
+      });
+      
+      csvContent += "\n\nMEDICATION LOG\n";
+      csvContent += "Date,Medication,Status\n";
+      user.medLogs.forEach(log => {
+        csvContent += `${log.date},${log.medName},${log.taken ? 'Taken' : 'Skipped'}\n`;
+      });
+
+      csvContent += "\n\nMEDICATIONS\n";
+      csvContent += "Name,Dosage,Frequency,Timing,Primary\n";
+      user.medications.forEach(med => {
+        csvContent += `${med.name},${med.dosage},${med.frequency} times/day,"${med.timing || ''}",${med.isPrimary ? 'Yes' : 'No'}\n`;
+      });
+
+      csvContent += "\n\nPROFILE\n";
+      csvContent += `Age,${user.profile.age}\n`;
+      csvContent += `Sex,${user.profile.sex}\n`;
+      csvContent += `BMI,${user.profile.bmi}\n`;
+      csvContent += `Weight,${user.profile.weight} kg\n`;
+      csvContent += `Height,${user.profile.height} cm\n`;
+      csvContent += `Hypertension,${user.profile.hypertension}\n`;
+      csvContent += `Diabetes,${user.profile.diabetes}\n`;
+      csvContent += `Smoking,${user.profile.smoking}\n`;
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `neuroshield_${appData.currentUser}_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert('Data exported successfully! You can share this file with your doctor.');
+    }
+
+    // Close modals on outside click
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('active');
+      }
+    }
+
     updateUserList();
   </script>
 </body>
