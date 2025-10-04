@@ -13,8 +13,8 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
       min-height: 100vh;
       padding: 20px;
     }
@@ -62,7 +62,7 @@
     }
 
     .card h2 {
-      color: #667eea;
+      color: #0077be;
       margin-bottom: 20px;
       font-size: 1.8em;
       display: flex;
@@ -102,7 +102,7 @@
     .input-group select:focus,
     .input-group textarea:focus {
       outline: none;
-      border-color: #667eea;
+      border-color: #0077be;
     }
 
     .input-group small {
@@ -128,13 +128,13 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
       color: white;
     }
 
     .btn-primary:hover {
       transform: scale(1.05);
-      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 5px 20px rgba(0, 119, 190, 0.4);
     }
 
     .btn-success {
@@ -225,7 +225,7 @@
       padding: 15px;
       border-radius: 10px;
       margin-bottom: 10px;
-      border-left: 4px solid #667eea;
+      border-left: 4px solid #0077be;
     }
 
     .medication-item.primary {
@@ -234,12 +234,12 @@
     }
 
     .medication-item h4 {
-      color: #667eea;
+      color: #0077be;
       margin-bottom: 8px;
     }
 
     .recommendations {
-      background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+      background: linear-gradient(135deg, #0077be15 0%, #005f8d15 100%);
       padding: 20px;
       border-radius: 15px;
       margin-top: 20px;
@@ -273,7 +273,7 @@
     }
 
     .stat-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
       color: white;
       padding: 20px;
       border-radius: 15px;
@@ -284,7 +284,7 @@
 
     .stat-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 119, 190, 0.4);
     }
 
     .stat-card h3 {
@@ -322,7 +322,7 @@
 
     .user-badge {
       display: inline-block;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
       color: white;
       padding: 8px 15px;
       border-radius: 20px;
@@ -368,7 +368,7 @@
     }
 
     .user-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
       color: white;
       padding: 20px;
       border-radius: 15px;
@@ -380,7 +380,7 @@
 
     .user-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 119, 190, 0.4);
     }
 
     .user-card h3 {
@@ -418,8 +418,8 @@
 
     .quick-action {
       background: white;
-      border: 2px solid #667eea;
-      color: #667eea;
+      border: 2px solid #0077be;
+      color: #0077be;
       padding: 15px;
       border-radius: 15px;
       text-align: center;
@@ -430,7 +430,7 @@
     }
 
     .quick-action:hover {
-      background: #667eea;
+      background: #0077be;
       color: white;
       transform: scale(1.05);
     }
@@ -451,11 +451,11 @@
       background: #f9f9f9;
       padding: 20px;
       border-radius: 15px;
-      border-left: 4px solid #667eea;
+      border-left: 4px solid #0077be;
     }
 
     .summary-card h4 {
-      color: #667eea;
+      color: #0077be;
       margin-bottom: 10px;
     }
 
@@ -548,7 +548,7 @@
 
       <div id="dashboardAlerts"></div>
 
-      <h3 style="margin: 20px 0 10px 0; color: #667eea;">Quick Actions</h3>
+      <h3 style="margin: 20px 0 10px 0; color: #0077be;">Quick Actions</h3>
       <div style="display: flex; gap: 15px; flex-wrap: wrap;">
         <div class="quick-action" onclick="showQuickBPLog()">
           <h4>🩺</h4>
@@ -564,15 +564,23 @@
         </div>
       </div>
 
-      <h3 style="margin: 20px 0 10px 0; color: #667eea;">Dashboard</h3>
+      <h3 style="margin: 20px 0 10px 0; color: #0077be;">Dashboard</h3>
       <div class="dashboard-summary" id="dashboardSummary"></div>
 
-      <h3 style="margin: 20px 0 10px 0; color: #667eea;">Manage</h3>
+      <h3 style="margin: 20px 0 10px 0; color: #0077be;">My Information</h3>
       <div class="stats-grid">
         <div class="stat-card" onclick="showProfileEdit()">
           <h3>📝</h3>
           <p>Update Profile</p>
         </div>
+        <div class="stat-card" onclick="showHealthHistory()">
+          <h3>📊</h3>
+          <p>Health History</p>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 10px 0; color: #0077be;">For Hypertensives Only</h3>
+      <div class="stats-grid">
         <div class="stat-card" onclick="showBPSection()">
           <h3>🩺</h3>
           <p>BP Monitoring</p>
@@ -580,10 +588,6 @@
         <div class="stat-card" onclick="showMedicationSection()">
           <h3>💊</h3>
           <p>Medications</p>
-        </div>
-        <div class="stat-card" onclick="showHealthHistory()">
-          <h3>📊</h3>
-          <p>Health History</p>
         </div>
       </div>
     </div>
@@ -1032,7 +1036,6 @@
       const alertsDiv = document.getElementById('dashboardAlerts');
       let alerts = [];
 
-      // Check profile update
       if (!user.lastUpdated || !user.profile.dob) {
         alerts.push({
           type: 'warning',
@@ -1060,7 +1063,6 @@
         }
       }
 
-      // Check BP reminder
       if (user.profile.hypertension === 'yes') {
         if (!user.bpReadings || user.bpReadings.length === 0) {
           alerts.push({
@@ -1087,7 +1089,6 @@
         }
       }
 
-      // Check medication adherence
       if (user.medications && user.medications.length > 0) {
         const total = user.takenCount + user.skippedCount;
         if (total > 10) {
@@ -1122,7 +1123,6 @@
       
       let summary = [];
 
-      // Latest BP
       if (user.bpReadings && user.bpReadings.length > 0) {
         const latest = user.bpReadings[user.bpReadings.length - 1];
         const date = new Date(latest.timestamp);
@@ -1135,7 +1135,6 @@
         });
       }
 
-      // Current BMI
       if (user.profile.bmi) {
         summary.push({
           title: 'Current BMI',
@@ -1144,7 +1143,6 @@
         });
       }
 
-      // Today's Medications
       if (user.medications && user.medications.length > 0) {
         const totalDoses = user.medications.reduce((sum, med) => sum + med.frequency, 0);
         summary.push({
@@ -1154,7 +1152,6 @@
         });
       }
 
-      // Adherence
       const total = user.takenCount + user.skippedCount;
       if (total > 0) {
         const adherence = Math.round((user.takenCount / total) * 100);
@@ -1414,8 +1411,8 @@
           }, {
             label: 'Diastolic',
             data: [],
-            borderColor: '#667eea',
-            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            borderColor: '#0077be',
+            backgroundColor: 'rgba(0, 119, 190, 0.1)',
             tension: 0.4
           }]
         },
@@ -1752,7 +1749,6 @@
       document.getElementById('medicationsCount').textContent = user.medications.length;
     }
 
-    // Quick BP Log Modal
     function showQuickBPLog() {
       document.getElementById('quickBPModal').classList.add('active');
     }
@@ -1791,7 +1787,6 @@
       loadDashboard();
     }
 
-    // Today's Meds Modal
     function showTodaysMeds() {
       const user = appData.users[appData.currentUser];
       const modalList = document.getElementById('modalMedsList');
@@ -1823,13 +1818,11 @@
       showTodaysMeds();
     }
 
-    // Export Data
     function exportData() {
       const user = appData.users[appData.currentUser];
       
       let csvContent = "data:text/csv;charset=utf-8,";
       
-      // BP Data
       csvContent += "BLOOD PRESSURE READINGS\n";
       csvContent += "Date,Systolic,Diastolic,Notes\n";
       user.bpReadings.forEach(reading => {
@@ -1869,7 +1862,6 @@
       alert('Data exported successfully! You can share this file with your doctor.');
     }
 
-    // Close modals on outside click
     window.onclick = function(event) {
       if (event.target.classList.contains('modal')) {
         event.target.classList.remove('active');
