@@ -498,6 +498,8 @@
       overflow-y: auto;
     }
 
+    /* Risk assessment UI removed: assessment now computed automatically from profile */
+
     @media (max-width: 768px) {
       .header h1 {
         font-size: 2em;
@@ -1262,6 +1264,13 @@
 
       user.lastUpdated = new Date().toISOString();
 
+      // Automatically assess risk from profile and store in user record
+      try {
+        user.riskAssessment = assessRiskFromProfile(user.profile);
+      } catch (e) {
+        console.error('Risk assessment failed:', e);
+      }
+
       alert('Profile saved successfully!');
       backToDashboard();
     }
@@ -1650,7 +1659,7 @@
     function showHealthHistory() {
       const user = appData.users[appData.currentUser];
       
-      if (!user.profile.age) {
+      if (!user.profile || !user.profile.age) {
         alert('Please complete your profile first!');
         showProfileEdit();
         return;
@@ -1659,85 +1668,119 @@
       hideAllSections();
       document.getElementById('historySection').classList.remove('hidden');
 
-      calculateRisk();
+      // Ensure there's an assessment stored; if not, compute it now
+      if (!user.riskAssessment) {
+        try {
+          user.riskAssessment = assessRiskFromProfile(user.profile);
+        } catch (e) {
+          console.error('Failed to assess risk:', e);
+        }
+      }
+
+      renderRiskInHistory(user.riskAssessment);
       displayHealthStats();
     }
 
-    function calculateRisk() {
-      const user = appData.users[appData.currentUser];
-      const profile = user.profile;
+    // New: assess risk using profile fields and return a structured assessment
+    function assessRiskFromProfile(profile) {
+      // Score components
+      let score = 0;
+      const factors = [];
+      const actions = [];
 
-      let riskScore = 0;
-      let riskLevel = 'Low';
-      let riskClass = 'risk-low';
-
-      if (profile.bmi >= 25) riskScore += 1;
-      if (profile.bmi >= 30) riskScore += 2;
-      if (profile.age > 45) riskScore += 1;
-      if (profile.age > 65) riskScore += 2;
-      if (profile.smoking === 'yes') riskScore += 2;
-      if (profile.diabetes === 'yes') riskScore += 2;
-      if (profile.familyHistory && profile.familyHistory.length > 10) riskScore += 1;
-      if (profile.activity === 'sedentary') riskScore += 1;
-      if (profile.alcohol === 'heavy') riskScore += 1;
-      if (profile.hypertension === 'yes') riskScore += 2;
-
-      if (riskScore >= 6) {
-        riskLevel = 'High';
-        riskClass = 'risk-high';
-      } else if (riskScore >= 3) {
-        riskLevel = 'Moderate';
-        riskClass = 'risk-moderate';
+      // BMI
+      const bmi = parseFloat(profile.bmi || 0);
+      if (!isNaN(bmi)) {
+        if (bmi >= 30) { score += 3; factors.push('Obesity (BMI ≥ 30)'); actions.push('Work on weight reduction (diet + exercise)'); }
+        else if (bmi >= 25) { score += 2; factors.push('Overweight (BMI 25-29.9)'); actions.push('Aim for a healthy weight through diet and activity'); }
       }
 
-      document.getElementById('riskDisplay').innerHTML = `
-        <p><strong>Your Cardiovascular Risk Level:</strong></p>
-        <div class="risk-badge ${riskClass}">${riskLevel} Risk</div>
-        <p style="margin-top: 10px; color: #666;">Based on your profile. This is not a medical diagnosis. Please consult your healthcare provider.</p>
-      `;
+      // Age
+      const age = parseInt(profile.age || 0, 10);
+      if (age >= 60) { score += 3; factors.push('Age ≥ 60 years'); }
+      else if (age >= 50) { score += 2; factors.push('Age 50-59 years'); }
+      else if (age >= 40) { score += 1; factors.push('Age 40-49 years'); }
 
-      generateRecommendations(profile, riskLevel);
+      // Sex (male increases risk slightly for some CV outcomes)
+      if (profile.sex === 'male') {
+        score += 1;
+        factors.push('Male sex');
+      }
+
+      // Smoking
+      if (profile.smoking === 'yes') { score += 2; factors.push('Current tobacco use'); actions.push('Enroll in a smoking cessation program'); }
+
+      // Diabetes
+      if (profile.diabetes === 'yes') { score += 3; factors.push('Diabetes'); actions.push('Tight glucose control and regular monitoring'); }
+
+      // Hypertension history
+      if (profile.hypertension === 'yes') { score += 3; factors.push('Previously diagnosed hypertension'); actions.push('Regular BP monitoring and medication adherence'); }
+
+      // Activity
+      if (profile.activity === 'sedentary' || profile.activity === 'light') { score += 1; factors.push('Low physical activity'); actions.push('Increase physical activity (150 min/week)'); }
+
+      // Alcohol
+      if (profile.alcohol === 'heavy') { score += 1; factors.push('Heavy alcohol consumption'); actions.push('Limit alcohol intake'); }
+
+      // Family history
+      if (profile.familyHistory && profile.familyHistory.trim().length > 5) { score += 1; factors.push('Positive family history'); }
+
+      // Stress and sleep (if provided as free text in medicalConditions/familyHistory we won't parse further)
+
+      // Determine category
+      let category = 'Low';
+      let categoryClass = 'risk-low';
+      let prevalence = '< 15%';
+      if (score >= 12) { category = 'High'; categoryClass = 'risk-high'; prevalence = '> 45%'; }
+      else if (score >= 6) { category = 'Moderate'; categoryClass = 'risk-moderate'; prevalence = '20-40%'; }
+
+      // Consolidate next steps
+      let nextSteps = 'Maintain healthy lifestyle and regular check-ups.';
+      if (category === 'High') nextSteps = 'Schedule a BP check within 1 month and consult your healthcare provider.';
+      else if (category === 'Moderate') nextSteps = 'Schedule a BP check within 6 months and begin lifestyle changes.';
+
+      // Ensure unique actions and factors
+      const uniq = arr => Array.from(new Set(arr));
+
+      return {
+        score,
+        category,
+        categoryClass,
+        prevalence,
+        factors: uniq(factors),
+        actions: uniq(actions),
+        nextSteps
+      };
     }
 
-    function generateRecommendations(profile, riskLevel) {
-      const recommendations = [];
-
-      recommendations.push('Walk for 30 minutes daily or 5 days a week');
-      recommendations.push('Follow a heart-healthy diet (low sodium, rich in fruits & vegetables)');
-      
-      if (profile.hypertension === 'yes') {
-        recommendations.push(`Check your BP every ${profile.bpFrequency} day(s) as recommended by your doctor`);
-        recommendations.push('Take your medications as prescribed and track adherence');
-      }
-      
-      if (profile.bmi >= 25) {
-        recommendations.push('Work towards achieving a healthy weight (BMI 18.5-24.9)');
-      }
-      
-      if (profile.smoking === 'yes') {
-        recommendations.push('Consider a smoking cessation program');
-      }
-      
-      if (profile.activity === 'sedentary') {
-        recommendations.push('Increase physical activity gradually - start with short walks');
-      }
-      
-      if (profile.diabetes === 'yes') {
-        recommendations.push('Monitor blood sugar levels regularly');
+    function renderRiskInHistory(assessment) {
+      const riskDiv = document.getElementById('riskDisplay');
+      if (!assessment) {
+        riskDiv.innerHTML = '<p>No risk assessment available.</p>';
+        return;
       }
 
-      recommendations.push('Practice stress management techniques (meditation, yoga, deep breathing)');
-      recommendations.push('Get 7-8 hours of quality sleep each night');
-      recommendations.push('Limit alcohol consumption');
-      
-      if (riskLevel === 'High') {
-        recommendations.push('Schedule a consultation with your healthcare provider');
-      } else {
-        recommendations.push('Schedule regular check-ups every 6-12 months');
-      }
+      riskDiv.innerHTML = `
+        <p><strong>Your Hypertension Risk Assessment</strong></p>
+        <div class="risk-badge ${assessment.categoryClass}">${assessment.category} Risk</div>
+        <p style="margin-top: 8px; color: #666;">Score: <strong>${assessment.score}</strong> — Estimated prevalence: <strong>${assessment.prevalence}</strong></p>
+        <div class="risk-details" style="margin-top:12px;">
+          <h4>Contributing Factors</h4>
+          <ul class="risk-factors-list">${assessment.factors.length ? assessment.factors.map(f => `<li>${f}</li>`).join('') : '<li>None identified</li>'}</ul>
+          <h4 style="margin-top:12px;">Recommended Actions</h4>
+          <ul class="risk-factors-list">${assessment.actions.length ? assessment.actions.map(a => `<li>${a}</li>`).join('') : '<li>Maintain healthy lifestyle</li>'}</ul>
+          <div class="alert alert-info" style="margin-top:12px;"><strong>Next steps:</strong><br>${assessment.nextSteps}</div>
+        </div>
+      `;
 
+      // Also populate recommendationsList for legacy UI
       const recList = document.getElementById('recommendationsList');
-      recList.innerHTML = recommendations.map(rec => `<li>${rec}</li>`).join('');
+      if (recList) {
+        const items = [];
+        if (assessment.actions.length) items.push(...assessment.actions);
+        items.push(assessment.nextSteps);
+        recList.innerHTML = items.map(i => `<li>${i}</li>`).join('');
+      }
     }
 
     function displayHealthStats() {
@@ -1817,6 +1860,8 @@
     function updateModalMeds() {
       showTodaysMeds();
     }
+
+    // Old form-based risk functions removed. Risk is now automatically assessed from profile when saved.
 
     function exportData() {
       const user = appData.users[appData.currentUser];
