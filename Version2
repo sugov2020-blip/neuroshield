@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroShield - Smart Hypertension Management</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.1em;
+      opacity: 0.95;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card h2 {
+      color: #0077be;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .input-group input,
+    .input-group select,
+    .input-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+      font-family: inherit;
+    }
+
+    .input-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus,
+    .input-group textarea:focus {
+      outline: none;
+      border-color: #0077be;
+    }
+
+    .input-group small {
+      color: #666;
+      font-size: 0.85em;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(0, 119, 190, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(56, 239, 125, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(235, 51, 73, 0.4);
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #868f96 0%, #596164 100%);
+      color: white;
+    }
+
+    .btn-small {
+      padding: 8px 15px;
+      font-size: 0.9em;
+    }
+
+    .risk-badge {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+
+    .risk-low {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+    }
+
+    .risk-moderate {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    .risk-high {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      color: white;
+    }
+
+    .log-entry {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .log-entry.taken {
+      border-left: 5px solid #38ef7d;
+    }
+
+    .log-entry.skipped {
+      border-left: 5px solid #f45c43;
+    }
+
+    .medication-item {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-left: 4px solid #0077be;
+    }
+
+    .medication-item.primary {
+      border-left: 4px solid #f45c43;
+      background: #fff8f8;
+    }
+
+    .medication-item h4 {
+      color: #0077be;
+      margin-bottom: 8px;
+    }
+
+    .recommendations {
+      background: linear-gradient(135deg, #0077be15 0%, #005f8d15 100%);
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+
+    .recommendations ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .recommendations li {
+      padding: 10px 0;
+      padding-left: 30px;
+      position: relative;
+    }
+
+    .recommendations li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #38ef7d;
+      font-weight: bold;
+      font-size: 1.5em;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 119, 190, 0.4);
+    }
+
+    .stat-card h3 {
+      font-size: 2.5em;
+      margin-bottom: 5px;
+    }
+
+    .stat-card p {
+      opacity: 0.9;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .progress-bar {
+      background: #e0e0e0;
+      border-radius: 10px;
+      height: 20px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+
+    .user-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    .alert {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+
+    .alert-warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      color: #856404;
+    }
+
+    .alert-info {
+      background: #d1ecf1;
+      border-left: 4px solid #17a2b8;
+      color: #0c5460;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      color: #155724;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.9; }
+    }
+
+    .user-select {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .user-card {
+      background: linear-gradient(135deg, #0077be 0%, #005f8d 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .user-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 119, 190, 0.4);
+    }
+
+    .user-card h3 {
+      font-size: 1.5em;
+      margin-bottom: 5px;
+    }
+
+    .delete-user {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(235, 51, 73, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 1.2em;
+      line-height: 1;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: 20px 0;
+    }
+
+    .chart-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .quick-action {
+      background: white;
+      border: 2px solid #0077be;
+      color: #0077be;
+      padding: 15px;
+      border-radius: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .quick-action:hover {
+      background: #0077be;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .quick-action h4 {
+      font-size: 2em;
+      margin-bottom: 5px;
+    }
+
+    .dashboard-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 15px;
+      border-left: 4px solid #0077be;
+    }
+
+    .summary-card h4 {
+      color: #0077be;
+      margin-bottom: 10px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      cursor: pointer;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2em;
+      }
+      .input-row {
+        grid-template-columns: 1fr;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>NeuroShield</h1>
+      <p>Smart Hypertension Management & Cardiovascular Risk Prevention</p>
+    </div>
+
+    <!-- User Login/Selection -->
+    <div class="card" id="userLogin">
+      <h2>Welcome to NeuroShield</h2>
+      
+      <div id="existingUsers" class="hidden">
+        <h3>Select Your Profile</h3>
+        <div class="user-select" id="userList"></div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <h3>Create New Profile</h3>
+        <div class="input-group">
+          <label>Username</label>
+          <input type="text" id="newUsername" placeholder="Enter your username">
+        </div>
+        <button class="btn btn-primary" onclick="createUser()">Create Profile</button>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="card hidden" id="dashboard">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <div class="user-badge" id="currentUserBadge"></div>
+        </div>
+        <button class="btn btn-secondary" onclick="logout()">Logout</button>
+      </div>
+
+      <div id="dashboardAlerts"></div>
+
+      <h3 style="margin: 20px 0 10px 0; color: #0077be;">Quick Actions</h3>
+      <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <div class="quick-action" onclick="showQuickBPLog()">
+          <h4>🩺</h4>
+          <p>Log BP</p>
+        </div>
+        <div class="quick-action" onclick="showTodaysMeds()">
+          <h4>💊</h4>
+          <p>Today's Meds</p>
+        </div>
+        <div class="quick-action" onclick="exportData()">
+          <h4>📥</h4>
+          <p>Export Data</p>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 10px 0; color: #0077be;">Dashboard</h3>
+      <div class="dashboard-summary" id="dashboardSummary"></div>
+
+      <h3 style="margin: 20px 0 10px 0; color: #0077be;">My Information</h3>
+      <div class="stats-grid">
+        <div class="stat-card" onclick="showProfileEdit()">
+          <h3>📝</h3>
+          <p>Update Profile</p>
+        </div>
+        <div class="stat-card" onclick="showHealthHistory()">
+          <h3>📊</h3>
+          <p>Health History</p>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 10px 0; color: #0077be;">For Hypertensives Only</h3>
+      <div class="stats-grid">
+        <div class="stat-card" onclick="showBPSection()">
+          <h3>🩺</h3>
+          <p>BP Monitoring</p>
+        </div>
+        <div class="stat-card" onclick="showMedicationSection()">
+          <h3>💊</h3>
+          <p>Medications</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Edit Section -->
+    <div class="card hidden" id="profileSection">
+      <h2>Patient Profile</h2>
+      
+      <div class="input-group">
+        <label>Date of Birth</label>
+        <input type="date" id="dob">
+        <small>Age will be calculated automatically</small>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label>Sex</label>
+          <select id="sex">
+            <option value="">Select</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Current Age</label>
+          <input type="text" id="calculatedAge" readonly style="background: #f5f5f5;">
+        </div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label>Weight (kg)</label>
+          <input type="number" id="weight" placeholder="Enter weight" step="0.1">
+        </div>
+        <div class="input-group">
+          <label>Height (cm)</label>
+          <input type="number" id="height" placeholder="Enter height">
+        </div>
+        <div class="input-group">
+          <label>BMI</label>
+          <input type="text" id="calculatedBMI" readonly style="background: #f5f5f5;">
+        </div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label>Do you smoke?</label>
+          <select id="smoking">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Alcohol consumption</label>
+          <select id="alcohol">
+            <option value="no">No</option>
+            <option value="moderate">Moderate</option>
+            <option value="heavy">Heavy</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label>Do you have diabetes?</label>
+          <select id="diabetes">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Physical activity level</label>
+          <select id="activity">
+            <option value="sedentary">Sedentary</option>
+            <option value="light">Light</option>
+            <option value="moderate">Moderate</option>
+            <option value="active">Active</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Family History of Heart Disease</label>
+        <textarea id="familyHistory" placeholder="Describe any family history of heart disease, stroke, hypertension, etc."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label>Other Medical Conditions</label>
+        <textarea id="medicalConditions" placeholder="List any other medical conditions (e.g., kidney disease, high cholesterol)"></textarea>
+      </div>
+
+      <div class="input-group">
+        <label><strong>Have you been diagnosed with hypertension?</strong></label>
+        <select id="hypertension">
+          <option value="">Select</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>
+
+      <div class="input-group hidden" id="bpFrequencyGroup">
+        <label>How often should you check your BP? (as per doctor's recommendation)</label>
+        <select id="bpFrequency">
+          <option value="1">Daily</option>
+          <option value="2">Every 2 days</option>
+          <option value="3">Every 3 days</option>
+          <option value="7">Weekly</option>
+          <option value="14">Every 2 weeks</option>
+          <option value="30">Monthly</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+      <button class="btn btn-secondary" onclick="backToDashboard()">Back to Dashboard</button>
+    </div>
+
+    <!-- BP Monitoring Section -->
+    <div class="card hidden" id="bpSection">
+      <h2>Blood Pressure Monitoring</h2>
+      
+      <div id="bpReminderAlert"></div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label>Systolic (mmHg)</label>
+          <input type="number" id="systolic" placeholder="e.g., 120">
+        </div>
+        <div class="input-group">
+          <label>Diastolic (mmHg)</label>
+          <input type="number" id="diastolic" placeholder="e.g., 80">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Notes (optional)</label>
+        <input type="text" id="bpNotes" placeholder="e.g., After exercise, stressed, etc.">
+      </div>
+      
+      <button class="btn btn-primary" onclick="logBP()">Log BP Reading</button>
+
+      <div style="margin-top: 30px;">
+        <h3>BP Trends</h3>
+        <div class="chart-controls">
+          <button class="btn btn-small btn-primary" onclick="updateBPChart(7)">7 Days</button>
+          <button class="btn btn-small btn-primary" onclick="updateBPChart(30)">30 Days</button>
+          <button class="btn btn-small btn-primary" onclick="updateBPChart(90)">90 Days</button>
+          <button class="btn btn-small btn-primary" onclick="updateBPChart(0)">All Time</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="bpChart"></canvas>
+        </div>
+      </div>
+      
+      <div id="bpLog" style="margin-top: 20px;"></div>
+
+      <button class="btn btn-secondary" onclick="backToDashboard()" style="margin-top: 20px;">Back to Dashboard</button>
+    </div>
+
+    <!-- Medication Management Section -->
+    <div class="card hidden" id="medicationSection">
+      <h2>Medication Management</h2>
+      
+      <h3>Add New Medication</h3>
+      <div class="input-group">
+        <label>Medication Name</label>
+        <input type="text" id="medName" placeholder="e.g., Amlodipine 5mg">
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label>Dosage</label>
+          <input type="text" id="medDosage" placeholder="e.g., 5mg">
+        </div>
+        <div class="input-group">
+          <label>Frequency per Day</label>
+          <input type="number" id="medFrequency" placeholder="e.g., 2" min="1" max="10">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Timing(s)</label>
+        <input type="text" id="medTiming" placeholder="e.g., Morning 8:00 AM, Evening 8:00 PM">
+      </div>
+
+      <div class="input-group">
+        <label>Doctor's Instructions</label>
+        <textarea id="medInstructions" placeholder="Any special instructions from your doctor"></textarea>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="isPrimary">
+        <label for="isPrimary">Mark as primary medication (most important)</label>
+      </div>
+      
+      <button class="btn btn-primary" onclick="addMedication()">Add Medication</button>
+
+      <div style="margin-top: 30px;">
+        <h3>My Medications</h3>
+        <div id="medicationList"></div>
+      </div>
+
+      <div style="margin-top: 30px;">
+        <h3>Today's Medication Tracker</h3>
+        <div id="todayMedications"></div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <h3>Monthly Adherence</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" id="adherenceBar" style="width: 0%;">0%</div>
+        </div>
+      </div>
+      
+      <div id="medLog" style="margin-top: 20px;"></div>
+
+      <div class="stats-grid" style="margin-top: 20px;">
+        <div class="stat-card">
+          <h3 id="takenCount">0</h3>
+          <p>Doses Taken</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="skippedCount">0</h3>
+          <p>Doses Skipped</p>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="backToDashboard()" style="margin-top: 20px;">Back to Dashboard</button>
+    </div>
+
+    <!-- Health History Section -->
+    <div class="card hidden" id="historySection">
+      <h2>Health History & Risk Assessment</h2>
+      
+      <div id="riskDisplay"></div>
+      
+      <div class="recommendations">
+        <h3>Personalized Recommendations</h3>
+        <ul id="recommendationsList"></ul>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3 id="bmiDisplay">--</h3>
+          <p>Current BMI</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="ageDisplay">--</h3>
+          <p>Age</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="bpReadingsCount">0</h3>
+          <p>BP Readings</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="medicationsCount">0</h3>
+          <p>Medications</p>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="backToDashboard()" style="margin-top: 20px;">Back to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Quick BP Log Modal -->
+  <div class="modal" id="quickBPModal">
+    <div class="modal-content">
+      <h2>Quick BP Log</h2>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Systolic (mmHg)</label>
+          <input type="number" id="quickSystolic" placeholder="120">
+        </div>
+        <div class="input-group">
+          <label>Diastolic (mmHg)</label>
+          <input type="number" id="quickDiastolic" placeholder="80">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Notes (optional)</label>
+        <input type="text" id="quickBPNotes" placeholder="Any notes...">
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-primary" onclick="quickLogBP()">Log BP</button>
+        <button class="btn btn-secondary" onclick="closeModal('quickBPModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's Meds Modal -->
+  <div class="modal" id="todaysMedsModal">
+    <div class="modal-content">
+      <h2>Today's Medications</h2>
+      <div id="modalMedsList"></div>
+      <button class="btn btn-secondary" onclick="closeModal('todaysMedsModal')" style="margin-top: 20px;">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const appData = {
+      users: {},
+      currentUser: null
+    };
+
+    let bpChart = null;
+
+    function calculateAge(dob) {
+      const today = new Date();
+      const birthDate = new Date(dob);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const dobInput = document.getElementById('dob');
+      const weightInput = document.getElementById('weight');
+      const heightInput = document.getElementById('height');
+
+      if (dobInput) {
+        dobInput.addEventListener('change', function() {
+          if (this.value) {
+            const age = calculateAge(this.value);
+            document.getElementById('calculatedAge').value = age + ' years';
+          }
+        });
+      }
+
+      const calculateBMI = function() {
+        const weight = parseFloat(weightInput.value);
+        const height = parseFloat(heightInput.value);
+        if (weight && height) {
+          const bmi = (weight / Math.pow(height / 100, 2)).toFixed(1);
+          document.getElementById('calculatedBMI').value = bmi;
+        }
+      };
+
+      if (weightInput) weightInput.addEventListener('input', calculateBMI);
+      if (heightInput) heightInput.addEventListener('input', calculateBMI);
+
+      const hypertensionSelect = document.getElementById('hypertension');
+      if (hypertensionSelect) {
+        hypertensionSelect.addEventListener('change', function() {
+          const bpFreqGroup = document.getElementById('bpFrequencyGroup');
+          if (this.value === 'yes') {
+            bpFreqGroup.classList.remove('hidden');
+          } else {
+            bpFreqGroup.classList.add('hidden');
+          }
+        });
+      }
+
+      updateUserList();
+    });
+
+    function createUser() {
+      const username = document.getElementById('newUsername').value.trim();
+      if (!username) {
+        alert('Please enter a username!');
+        return;
+      }
+
+      if (appData.users[username]) {
+        alert('Username already exists! Please choose another.');
+        return;
+      }
+
+      appData.users[username] = {
+        username: username,
+        profile: {},
+        bpReadings: [],
+        medications: [],
+        medLogs: [],
+        takenCount: 0,
+        skippedCount: 0,
+        lastUpdated: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      };
+
+      loginUser(username);
+    }
+
+    function loginUser(username) {
+      appData.currentUser = username;
+      document.getElementById('userLogin').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      document.getElementById('currentUserBadge').textContent = username;
+      
+      loadDashboard();
+    }
+
+    function logout() {
+      appData.currentUser = null;
+      hideAllSections();
+      document.getElementById('userLogin').classList.remove('hidden');
+      updateUserList();
+    }
+
+    function updateUserList() {
+      const userList = document.getElementById('userList');
+      const existingUsers = document.getElementById('existingUsers');
+      
+      if (Object.keys(appData.users).length > 0) {
+        existingUsers.classList.remove('hidden');
+        userList.innerHTML = '';
+        
+        for (let username in appData.users) {
+          const userCard = document.createElement('div');
+          userCard.className = 'user-card';
+          userCard.innerHTML = `
+            <button class="delete-user" onclick="deleteUser('${username}', event)">×</button>
+            <h3>👤</h3>
+            <p>${username}</p>
+          `;
+          userCard.onclick = (e) => {
+            if (!e.target.classList.contains('delete-user')) {
+              loginUser(username);
+            }
+          };
+          userList.appendChild(userCard);
+        }
+      } else {
+        existingUsers.classList.add('hidden');
+      }
+    }
+
+    function deleteUser(username, event) {
+      event.stopPropagation();
+      if (confirm(`Are you sure you want to delete the profile for ${username}? This cannot be undone.`)) {
+        delete appData.users[username];
+        updateUserList();
+      }
+    }
+
+    function loadDashboard() {
+      updateDashboardAlerts();
+      updateDashboardSummary();
+      updateUserList();
+    }
+
+    function updateDashboardAlerts() {
+      const user = appData.users[appData.currentUser];
+      const alertsDiv = document.getElementById('dashboardAlerts');
+      let alerts = [];
+
+      if (!user.lastUpdated || !user.profile.dob) {
+        alerts.push({
+          type: 'warning',
+          message: '⚠️ Please complete your profile to get started.',
+          action: 'showProfileEdit()',
+          actionText: 'Update Profile'
+        });
+      } else {
+        const lastUpdate = new Date(user.lastUpdated);
+        const now = new Date();
+        const daysSinceUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+        
+        if (daysSinceUpdate >= 60) {
+          alerts.push({
+            type: 'warning',
+            message: `⚠️ It's been ${daysSinceUpdate} days since your last profile update. Please update your weight and health information.`,
+            action: 'showProfileEdit()',
+            actionText: 'Update Now'
+          });
+        } else if (daysSinceUpdate >= 30) {
+          alerts.push({
+            type: 'info',
+            message: `ℹ️ Consider updating your profile. Last updated ${daysSinceUpdate} days ago.`
+          });
+        }
+      }
+
+      if (user.profile.hypertension === 'yes') {
+        if (!user.bpReadings || user.bpReadings.length === 0) {
+          alerts.push({
+            type: 'info',
+            message: 'ℹ️ Start tracking your blood pressure regularly.',
+            action: 'showBPSection()',
+            actionText: 'Log BP'
+          });
+        } else {
+          const lastReading = user.bpReadings[user.bpReadings.length - 1];
+          const lastDate = new Date(lastReading.timestamp);
+          const now = new Date();
+          const daysSinceReading = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+          const frequency = parseInt(user.profile.bpFrequency || 7);
+
+          if (daysSinceReading >= frequency) {
+            alerts.push({
+              type: 'warning',
+              message: `⚠️ Time to check your BP! Last reading was ${daysSinceReading} days ago.`,
+              action: 'showQuickBPLog()',
+              actionText: 'Log BP Now'
+            });
+          }
+        }
+      }
+
+      if (user.medications && user.medications.length > 0) {
+        const total = user.takenCount + user.skippedCount;
+        if (total > 10) {
+          const adherence = Math.round((user.takenCount / total) * 100);
+          if (adherence < 80) {
+            alerts.push({
+              type: 'warning',
+              message: `⚠️ Your medication adherence is ${adherence}%. Try to improve consistency.`,
+              action: 'showMedicationSection()',
+              actionText: 'View Medications'
+            });
+          } else if (adherence >= 90) {
+            alerts.push({
+              type: 'success',
+              message: `✅ Great job! Your medication adherence is ${adherence}%.`
+            });
+          }
+        }
+      }
+
+      alertsDiv.innerHTML = alerts.map(alert => `
+        <div class="alert alert-${alert.type}">
+          ${alert.message}
+          ${alert.action ? `<button class="btn btn-${alert.type === 'warning' ? 'warning' : 'primary'} btn-small" onclick="${alert.action}" style="margin-left: 10px;">${alert.actionText}</button>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function updateDashboardSummary() {
+      const user = appData.users[appData.currentUser];
+      const summaryDiv = document.getElementById('dashboardSummary');
+      
+      let summary = [];
+
+      if (user.bpReadings && user.bpReadings.length > 0) {
+        const latest = user.bpReadings[user.bpReadings.length - 1];
+        const date = new Date(latest.timestamp);
+        const daysAgo = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
+        summary.push({
+          title: 'Latest BP Reading',
+          content: `<strong>${latest.systolic}/${latest.diastolic} mmHg</strong><br>
+                    <small>${daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : daysAgo + ' days ago'}</small><br>
+                    <small>${getBPEmoji(latest.systolic, latest.diastolic)}</small>`
+        });
+      }
+
+      if (user.profile.bmi) {
+        summary.push({
+          title: 'Current BMI',
+          content: `<strong>${user.profile.bmi}</strong><br>
+                    <small>${getBMICategory(user.profile.bmi)}</small>`
+        });
+      }
+
+      if (user.medications && user.medications.length > 0) {
+        const totalDoses = user.medications.reduce((sum, med) => sum + med.frequency, 0);
+        summary.push({
+          title: 'Today\'s Medications',
+          content: `<strong>${user.medications.length} medications</strong><br>
+                    <small>${totalDoses} doses to take</small>`
+        });
+      }
+
+      const total = user.takenCount + user.skippedCount;
+      if (total > 0) {
+        const adherence = Math.round((user.takenCount / total) * 100);
+        summary.push({
+          title: 'Medication Adherence',
+          content: `<strong>${adherence}%</strong><br>
+                    <small>${user.takenCount} taken, ${user.skippedCount} skipped</small>`
+        });
+      }
+
+      summaryDiv.innerHTML = summary.map(item => `
+        <div class="summary-card">
+          <h4>${item.title}</h4>
+          <div>${item.content}</div>
+        </div>
+      `).join('');
+    }
+
+    function getBMICategory(bmi) {
+      bmi = parseFloat(bmi);
+      if (bmi < 18.5) return 'Underweight';
+      if (bmi < 25) return 'Normal weight';
+      if (bmi < 30) return 'Overweight';
+      return 'Obese';
+    }
+
+    function hideAllSections() {
+      const sections = ['userLogin', 'dashboard', 'profileSection', 'bpSection', 'medicationSection', 'historySection'];
+      sections.forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+    }
+
+    function showProfileEdit() {
+      hideAllSections();
+      document.getElementById('profileSection').classList.remove('hidden');
+      
+      const user = appData.users[appData.currentUser];
+      if (user.profile) {
+        document.getElementById('dob').value = user.profile.dob || '';
+        document.getElementById('sex').value = user.profile.sex || '';
+        document.getElementById('weight').value = user.profile.weight || '';
+        document.getElementById('height').value = user.profile.height || '';
+        document.getElementById('smoking').value = user.profile.smoking || 'no';
+        document.getElementById('alcohol').value = user.profile.alcohol || 'no';
+        document.getElementById('diabetes').value = user.profile.diabetes || 'no';
+        document.getElementById('activity').value = user.profile.activity || 'sedentary';
+        document.getElementById('familyHistory').value = user.profile.familyHistory || '';
+        document.getElementById('medicalConditions').value = user.profile.medicalConditions || '';
+        document.getElementById('hypertension').value = user.profile.hypertension || '';
+        document.getElementById('bpFrequency').value = user.profile.bpFrequency || '7';
+        
+        if (user.profile.dob) {
+          const age = calculateAge(user.profile.dob);
+          document.getElementById('calculatedAge').value = age + ' years';
+        }
+        
+        if (user.profile.weight && user.profile.height) {
+          const bmi = (user.profile.weight / Math.pow(user.profile.height / 100, 2)).toFixed(1);
+          document.getElementById('calculatedBMI').value = bmi;
+        }
+
+        if (user.profile.hypertension === 'yes') {
+          document.getElementById('bpFrequencyGroup').classList.remove('hidden');
+        }
+      }
+    }
+
+    function saveProfile() {
+      const dob = document.getElementById('dob').value;
+      const sex = document.getElementById('sex').value;
+      const weight = document.getElementById('weight').value;
+      const height = document.getElementById('height').value;
+      const smoking = document.getElementById('smoking').value;
+      const alcohol = document.getElementById('alcohol').value;
+      const diabetes = document.getElementById('diabetes').value;
+      const activity = document.getElementById('activity').value;
+      const familyHistory = document.getElementById('familyHistory').value;
+      const medicalConditions = document.getElementById('medicalConditions').value;
+      const hypertension = document.getElementById('hypertension').value;
+      const bpFrequency = document.getElementById('bpFrequency').value;
+
+      if (!dob || !sex || !weight || !height || !hypertension) {
+        alert('Please fill in all required fields (DOB, Sex, Weight, Height, Hypertension status)!');
+        return;
+      }
+
+      const user = appData.users[appData.currentUser];
+      const age = calculateAge(dob);
+      const bmi = (weight / Math.pow(height / 100, 2)).toFixed(1);
+
+      user.profile = {
+        dob,
+        age,
+        sex,
+        weight,
+        height,
+        bmi,
+        smoking,
+        alcohol,
+        diabetes,
+        activity,
+        familyHistory,
+        medicalConditions,
+        hypertension,
+        bpFrequency
+      };
+
+      user.lastUpdated = new Date().toISOString();
+
+      alert('Profile saved successfully!');
+      backToDashboard();
+    }
+
+    function backToDashboard() {
+      hideAllSections();
+      document.getElementById('dashboard').classList.remove('hidden');
+      loadDashboard();
+    }
+
+    function showBPSection() {
+      const user = appData.users[appData.currentUser];
+      
+      if (!user.profile.hypertension || user.profile.hypertension === 'no') {
+        alert('BP monitoring is recommended for hypertensive patients. Please update your profile if you have been diagnosed with hypertension.');
+        return;
+      }
+
+      hideAllSections();
+      document.getElementById('bpSection').classList.remove('hidden');
+      
+      checkBPReminder();
+      displayBPLog();
+      initBPChart();
+      updateBPChart(30);
+    }
+
+    function checkBPReminder() {
+      const user = appData.users[appData.currentUser];
+      if (!user.bpReadings || user.bpReadings.length === 0) {
+        document.getElementById('bpReminderAlert').innerHTML = `
+          <div class="alert alert-info">
+            ℹ️ No BP readings yet. Start tracking your blood pressure regularly.
+          </div>
+        `;
+        return;
+      }
+
+      const lastReading = user.bpReadings[user.bpReadings.length - 1];
+      const lastDate = new Date(lastReading.timestamp);
+      const now = new Date();
+      const daysSinceReading = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+      const frequency = parseInt(user.profile.bpFrequency || 7);
+
+      const alertDiv = document.getElementById('bpReminderAlert');
+      
+      if (daysSinceReading >= frequency) {
+        alertDiv.innerHTML = `
+          <div class="alert alert-warning">
+            ⚠️ Time to check your BP! Last reading was ${daysSinceReading} days ago. 
+            Your doctor recommends checking every ${frequency} day(s).
+          </div>
+        `;
+      } else {
+        alertDiv.innerHTML = `
+          <div class="alert alert-success">
+            ✓ Last BP reading: ${daysSinceReading} day(s) ago. Next check due in ${frequency - daysSinceReading} day(s).
+          </div>
+        `;
+      }
+    }
+
+    function logBP() {
+      const systolic = document.getElementById('systolic').value;
+      const diastolic = document.getElementById('diastolic').value;
+      const notes = document.getElementById('bpNotes').value;
+
+      if (!systolic || !diastolic) {
+        alert('Please enter both systolic and diastolic values!');
+        return;
+      }
+
+      const user = appData.users[appData.currentUser];
+      const timestamp = new Date().toISOString();
+      const reading = { 
+        systolic: parseInt(systolic), 
+        diastolic: parseInt(diastolic), 
+        notes: notes,
+        timestamp, 
+        date: new Date().toLocaleString() 
+      };
+      user.bpReadings.push(reading);
+
+      document.getElementById('systolic').value = '';
+      document.getElementById('diastolic').value = '';
+      document.getElementById('bpNotes').value = '';
+
+      displayBPLog();
+      checkBPReminder();
+      updateBPChart(30);
+      alert('BP reading logged successfully!');
+    }
+
+    function displayBPLog() {
+      const user = appData.users[appData.currentUser];
+      const bpLog = document.getElementById('bpLog');
+      
+      if (!user.bpReadings || user.bpReadings.length === 0) {
+        bpLog.innerHTML = '<p style="color: #666;">No BP readings yet.</p>';
+        return;
+      }
+
+      bpLog.innerHTML = '<h3>Recent BP Readings</h3>';
+      
+      const recentReadings = user.bpReadings.slice(-10).reverse();
+      recentReadings.forEach(reading => {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `
+          <div>
+            <strong>${reading.systolic}/${reading.diastolic} mmHg</strong>
+            ${reading.notes ? `<div style="font-size: 0.85em; color: #888; margin-top: 4px;">${reading.notes}</div>` : ''}
+            <div style="font-size: 0.9em; color: #666; margin-top: 4px;">${reading.date}</div>
+          </div>
+          <div style="font-size: 1.2em;">${getBPEmoji(reading.systolic, reading.diastolic)}</div>
+        `;
+        bpLog.appendChild(entry);
+      });
+    }
+
+    function getBPEmoji(sys, dias) {
+      if (sys < 120 && dias < 80) return '💚 Normal';
+      if (sys < 130 && dias < 80) return '💛 Elevated';
+      if (sys < 140 || dias < 90) return '🧡 Stage 1';
+      if (sys < 180 && dias < 120) return '❤️ Stage 2';
+      return '🚨 Crisis';
+    }
+
+    function initBPChart() {
+      const ctx = document.getElementById('bpChart');
+      if (!ctx) return;
+
+      if (bpChart) {
+        bpChart.destroy();
+      }
+
+      bpChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Systolic',
+            data: [],
+            borderColor: '#eb3349',
+            backgroundColor: 'rgba(235, 51, 73, 0.1)',
+            tension: 0.4
+          }, {
+            label: 'Diastolic',
+            data: [],
+            borderColor: '#0077be',
+            backgroundColor: 'rgba(0, 119, 190, 0.1)',
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: 'Blood Pressure Trends'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              min: 60,
+              max: 180,
+              title: {
+                display: true,
+                text: 'mmHg'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateBPChart(days) {
+      const user = appData.users[appData.currentUser];
+      if (!user.bpReadings || user.bpReadings.length === 0 || !bpChart) return;
+
+      let readings = user.bpReadings;
+      
+      if (days > 0) {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
+        readings = readings.filter(r => new Date(r.timestamp) >= cutoffDate);
+      }
+
+      const labels = readings.map(r => {
+        const date = new Date(r.timestamp);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      });
+      
+      const systolicData = readings.map(r => r.systolic);
+      const diastolicData = readings.map(r => r.diastolic);
+
+      bpChart.data.labels = labels;
+      bpChart.data.datasets[0].data = systolicData;
+      bpChart.data.datasets[1].data = diastolicData;
+      bpChart.update();
+    }
+
+    function showMedicationSection() {
+      hideAllSections();
+      document.getElementById('medicationSection').classList.remove('hidden');
+      displayMedications();
+      displayTodayMedications();
+      displayMedLog();
+      updateAdherence();
+    }
+
+    function addMedication() {
+      const medName = document.getElementById('medName').value.trim();
+      const medDosage = document.getElementById('medDosage').value.trim();
+      const medFrequency = document.getElementById('medFrequency').value;
+      const medTiming = document.getElementById('medTiming').value.trim();
+      const medInstructions = document.getElementById('medInstructions').value.trim();
+      const isPrimary = document.getElementById('isPrimary').checked;
+
+      if (!medName || !medDosage || !medFrequency) {
+        alert('Please fill in medication name, dosage, and frequency!');
+        return;
+      }
+
+      const user = appData.users[appData.currentUser];
+      const medication = {
+        id: Date.now(),
+        name: medName,
+        dosage: medDosage,
+        frequency: parseInt(medFrequency),
+        timing: medTiming,
+        instructions: medInstructions,
+        isPrimary: isPrimary,
+        addedDate: new Date().toISOString()
+      };
+
+      user.medications.push(medication);
+
+      document.getElementById('medName').value = '';
+      document.getElementById('medDosage').value = '';
+      document.getElementById('medFrequency').value = '';
+      document.getElementById('medTiming').value = '';
+      document.getElementById('medInstructions').value = '';
+      document.getElementById('isPrimary').checked = false;
+
+      displayMedications();
+      displayTodayMedications();
+      alert('Medication added successfully!');
+    }
+
+    function displayMedications() {
+      const user = appData.users[appData.currentUser];
+      const medList = document.getElementById('medicationList');
+
+      if (!user.medications || user.medications.length === 0) {
+        medList.innerHTML = '<p style="color: #666;">No medications added yet.</p>';
+        return;
+      }
+
+      medList.innerHTML = '';
+      user.medications.forEach(med => {
+        const medItem = document.createElement('div');
+        medItem.className = `medication-item ${med.isPrimary ? 'primary' : ''}`;
+        medItem.innerHTML = `
+          <h4>${med.name} ${med.isPrimary ? '⭐ PRIMARY' : ''}</h4>
+          <p><strong>Dosage:</strong> ${med.dosage}</p>
+          <p><strong>Frequency:</strong> ${med.frequency} time(s) per day</p>
+          <p><strong>Timing:</strong> ${med.timing || 'Not specified'}</p>
+          <p><strong>Instructions:</strong> ${med.instructions || 'None'}</p>
+          <button class="btn btn-danger btn-small" onclick="removeMedication(${med.id})">Remove</button>
+        `;
+        medList.appendChild(medItem);
+      });
+    }
+
+    function removeMedication(medId) {
+      if (!confirm('Are you sure you want to remove this medication?')) return;
+
+      const user = appData.users[appData.currentUser];
+      user.medications = user.medications.filter(med => med.id !== medId);
+      displayMedications();
+      displayTodayMedications();
+    }
+
+    function displayTodayMedications() {
+      const user = appData.users[appData.currentUser];
+      const todayMeds = document.getElementById('todayMedications');
+
+      if (!user.medications || user.medications.length === 0) {
+        todayMeds.innerHTML = '<p style="color: #666;">No medications to track.</p>';
+        return;
+      }
+
+      todayMeds.innerHTML = '';
+      user.medications.forEach(med => {
+        const medItem = document.createElement('div');
+        medItem.className = `medication-item ${med.isPrimary ? 'primary' : ''}`;
+        medItem.innerHTML = `
+          <h4>${med.name} - ${med.dosage} ${med.isPrimary ? '⭐' : ''}</h4>
+          <p><strong>Take ${med.frequency} time(s) today</strong></p>
+          <p>${med.timing || ''}</p>
+          <div>
+            <button class="btn btn-success btn-small" onclick="medTaken(${med.id}, '${med.name}')">✓ Taken</button>
+            <button class="btn btn-danger btn-small" onclick="medSkipped(${med.id}, '${med.name}')">✗ Skipped</button>
+          </div>
+        `;
+        todayMeds.appendChild(medItem);
+      });
+    }
+
+    function medTaken(medId, medName) {
+      logMedication(medId, medName, true);
+    }
+
+    function medSkipped(medId, medName) {
+      logMedication(medId, medName, false);
+    }
+
+    function logMedication(medId, medName, taken) {
+      const user = appData.users[appData.currentUser];
+      const timestamp = new Date().toISOString();
+      const log = { 
+        medId, 
+        medName, 
+        taken, 
+        timestamp, 
+        date: new Date().toLocaleString() 
+      };
+      
+      user.medLogs.push(log);
+
+      if (taken) {
+        user.takenCount++;
+      } else {
+        user.skippedCount++;
+      }
+
+      displayMedLog();
+      updateAdherence();
+      
+      alert(`${medName} marked as ${taken ? 'taken' : 'skipped'}!`);
+    }
+
+    function displayMedLog() {
+      const user = appData.users[appData.currentUser];
+      const medLog = document.getElementById('medLog');
+
+      if (!user.medLogs || user.medLogs.length === 0) {
+        medLog.innerHTML = '';
+        return;
+      }
+
+      medLog.innerHTML = '<h3>Recent Medication Log</h3>';
+      
+      const recentLogs = user.medLogs.slice(-20).reverse();
+      recentLogs.forEach(log => {
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${log.taken ? 'taken' : 'skipped'}`;
+        entry.innerHTML = `
+          <div>
+            <strong>${log.medName}</strong>
+            <div style="font-size: 0.9em; color: #666;">${log.date}</div>
+          </div>
+          <div style="font-size: 1.5em;">${log.taken ? '✅' : '❌'}</div>
+        `;
+        medLog.appendChild(entry);
+      });
+    }
+
+    function updateAdherence() {
+      const user = appData.users[appData.currentUser];
+      const total = user.takenCount + user.skippedCount;
+      const adherence = total > 0 ? Math.round((user.takenCount / total) * 100) : 0;
+
+      document.getElementById('adherenceBar').style.width = adherence + '%';
+      document.getElementById('adherenceBar').textContent = adherence + '%';
+      document.getElementById('takenCount').textContent = user.takenCount;
+      document.getElementById('skippedCount').textContent = user.skippedCount;
+    }
+
+    function showHealthHistory() {
+      const user = appData.users[appData.currentUser];
+      
+      if (!user.profile.age) {
+        alert('Please complete your profile first!');
+        showProfileEdit();
+        return;
+      }
+
+      hideAllSections();
+      document.getElementById('historySection').classList.remove('hidden');
+
+      calculateRisk();
+      displayHealthStats();
+    }
+
+    function calculateRisk() {
+      const user = appData.users[appData.currentUser];
+      const profile = user.profile;
+
+      let riskScore = 0;
+      let riskLevel = 'Low';
+      let riskClass = 'risk-low';
+
+      if (profile.bmi >= 25) riskScore += 1;
+      if (profile.bmi >= 30) riskScore += 2;
+      if (profile.age > 45) riskScore += 1;
+      if (profile.age > 65) riskScore += 2;
+      if (profile.smoking === 'yes') riskScore += 2;
+      if (profile.diabetes === 'yes') riskScore += 2;
+      if (profile.familyHistory && profile.familyHistory.length > 10) riskScore += 1;
+      if (profile.activity === 'sedentary') riskScore += 1;
+      if (profile.alcohol === 'heavy') riskScore += 1;
+      if (profile.hypertension === 'yes') riskScore += 2;
+
+      if (riskScore >= 6) {
+        riskLevel = 'High';
+        riskClass = 'risk-high';
+      } else if (riskScore >= 3) {
+        riskLevel = 'Moderate';
+        riskClass = 'risk-moderate';
+      }
+
+      document.getElementById('riskDisplay').innerHTML = `
+        <p><strong>Your Cardiovascular Risk Level:</strong></p>
+        <div class="risk-badge ${riskClass}">${riskLevel} Risk</div>
+        <p style="margin-top: 10px; color: #666;">Based on your profile. This is not a medical diagnosis. Please consult your healthcare provider.</p>
+      `;
+
+      generateRecommendations(profile, riskLevel);
+    }
+
+    function generateRecommendations(profile, riskLevel) {
+      const recommendations = [];
+
+      recommendations.push('Walk for 30 minutes daily or 5 days a week');
+      recommendations.push('Follow a heart-healthy diet (low sodium, rich in fruits & vegetables)');
+      
+      if (profile.hypertension === 'yes') {
+        recommendations.push(`Check your BP every ${profile.bpFrequency} day(s) as recommended by your doctor`);
+        recommendations.push('Take your medications as prescribed and track adherence');
+      }
+      
+      if (profile.bmi >= 25) {
+        recommendations.push('Work towards achieving a healthy weight (BMI 18.5-24.9)');
+      }
+      
+      if (profile.smoking === 'yes') {
+        recommendations.push('Consider a smoking cessation program');
+      }
+      
+      if (profile.activity === 'sedentary') {
+        recommendations.push('Increase physical activity gradually - start with short walks');
+      }
+      
+      if (profile.diabetes === 'yes') {
+        recommendations.push('Monitor blood sugar levels regularly');
+      }
+
+      recommendations.push('Practice stress management techniques (meditation, yoga, deep breathing)');
+      recommendations.push('Get 7-8 hours of quality sleep each night');
+      recommendations.push('Limit alcohol consumption');
+      
+      if (riskLevel === 'High') {
+        recommendations.push('Schedule a consultation with your healthcare provider');
+      } else {
+        recommendations.push('Schedule regular check-ups every 6-12 months');
+      }
+
+      const recList = document.getElementById('recommendationsList');
+      recList.innerHTML = recommendations.map(rec => `<li>${rec}</li>`).join('');
+    }
+
+    function displayHealthStats() {
+      const user = appData.users[appData.currentUser];
+      
+      document.getElementById('bmiDisplay').textContent = user.profile.bmi || '--';
+      document.getElementById('ageDisplay').textContent = user.profile.age || '--';
+      document.getElementById('bpReadingsCount').textContent = user.bpReadings.length;
+      document.getElementById('medicationsCount').textContent = user.medications.length;
+    }
+
+    function showQuickBPLog() {
+      document.getElementById('quickBPModal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function quickLogBP() {
+      const systolic = document.getElementById('quickSystolic').value;
+      const diastolic = document.getElementById('quickDiastolic').value;
+      const notes = document.getElementById('quickBPNotes').value;
+
+      if (!systolic || !diastolic) {
+        alert('Please enter both systolic and diastolic values!');
+        return;
+      }
+
+      const user = appData.users[appData.currentUser];
+      const timestamp = new Date().toISOString();
+      const reading = { 
+        systolic: parseInt(systolic), 
+        diastolic: parseInt(diastolic), 
+        notes: notes,
+        timestamp, 
+        date: new Date().toLocaleString() 
+      };
+      user.bpReadings.push(reading);
+
+      document.getElementById('quickSystolic').value = '';
+      document.getElementById('quickDiastolic').value = '';
+      document.getElementById('quickBPNotes').value = '';
+
+      closeModal('quickBPModal');
+      alert('BP reading logged successfully!');
+      loadDashboard();
+    }
+
+    function showTodaysMeds() {
+      const user = appData.users[appData.currentUser];
+      const modalList = document.getElementById('modalMedsList');
+
+      if (!user.medications || user.medications.length === 0) {
+        modalList.innerHTML = '<p style="color: #666;">No medications added yet. Add medications to track adherence.</p>';
+      } else {
+        modalList.innerHTML = '';
+        user.medications.forEach(med => {
+          const medItem = document.createElement('div');
+          medItem.className = `medication-item ${med.isPrimary ? 'primary' : ''}`;
+          medItem.innerHTML = `
+            <h4>${med.name} - ${med.dosage} ${med.isPrimary ? '⭐' : ''}</h4>
+            <p><strong>Take ${med.frequency} time(s) today</strong></p>
+            <p style="font-size: 0.9em; color: #666;">${med.timing || ''}</p>
+            <div style="margin-top: 10px;">
+              <button class="btn btn-success btn-small" onclick="medTaken(${med.id}, '${med.name}'); updateModalMeds();">✓ Taken</button>
+              <button class="btn btn-danger btn-small" onclick="medSkipped(${med.id}, '${med.name}'); updateModalMeds();">✗ Skipped</button>
+            </div>
+          `;
+          modalList.appendChild(medItem);
+        });
+      }
+
+      document.getElementById('todaysMedsModal').classList.add('active');
+    }
+
+    function updateModalMeds() {
+      showTodaysMeds();
+    }
+
+    function exportData() {
+      const user = appData.users[appData.currentUser];
+      
+      let csvContent = "data:text/csv;charset=utf-8,";
+      
+      csvContent += "BLOOD PRESSURE READINGS\n";
+      csvContent += "Date,Systolic,Diastolic,Notes\n";
+      user.bpReadings.forEach(reading => {
+        csvContent += `${reading.date},${reading.systolic},${reading.diastolic},"${reading.notes || ''}"\n`;
+      });
+      
+      csvContent += "\n\nMEDICATION LOG\n";
+      csvContent += "Date,Medication,Status\n";
+      user.medLogs.forEach(log => {
+        csvContent += `${log.date},${log.medName},${log.taken ? 'Taken' : 'Skipped'}\n`;
+      });
+
+      csvContent += "\n\nMEDICATIONS\n";
+      csvContent += "Name,Dosage,Frequency,Timing,Primary\n";
+      user.medications.forEach(med => {
+        csvContent += `${med.name},${med.dosage},${med.frequency} times/day,"${med.timing || ''}",${med.isPrimary ? 'Yes' : 'No'}\n`;
+      });
+
+      csvContent += "\n\nPROFILE\n";
+      csvContent += `Age,${user.profile.age}\n`;
+      csvContent += `Sex,${user.profile.sex}\n`;
+      csvContent += `BMI,${user.profile.bmi}\n`;
+      csvContent += `Weight,${user.profile.weight} kg\n`;
+      csvContent += `Height,${user.profile.height} cm\n`;
+      csvContent += `Hypertension,${user.profile.hypertension}\n`;
+      csvContent += `Diabetes,${user.profile.diabetes}\n`;
+      csvContent += `Smoking,${user.profile.smoking}\n`;
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `neuroshield_${appData.currentUser}_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert('Data exported successfully! You can share this file with your doctor.');
+    }
+
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('active');
+      }
+    }
+
+    updateUserList();
+  </script>
+</body>
+</html>
